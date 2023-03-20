@@ -1,0 +1,17 @@
+{
+    'G70':' G20',
+    'G71':' G21',
+    'G01':' G1',
+    'G00':' G0',
+    'G02':' G2',
+    'G03':' G3',
+    'M30':' M30',
+    'TC_TOOL_CHANGE':' M6',
+    'TC_SUCTION_ON':' M108',
+    'TC_SUCTION_OFF':' M109',
+    'PRESSERFOOT_ON':'#<_PRESSERFOOT_ON> = 1\n M165 P#<_PRESSERFOOT_ON>',
+    'PRESSERFOOT_OFF':'#<_PRESSERFOOT_ON> = 0\n M165 P#<_PRESSERFOOT_ON>',
+    'G90':' G90',
+    'G91':' G91',
+    'G53':'G53'
+}
