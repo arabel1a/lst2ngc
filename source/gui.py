@@ -18,7 +18,7 @@ if __name__ == "__main__":
 		config = ast.literal_eval(contents)
 		file.close()
 	except Exception as e:
-		gui_errors.append(f"Error opening vonfig file: {e}")
+		gui_errors.append(f"Error opening сonfig file: {e}")
 
 	try:
 		_file_lst =[
@@ -144,6 +144,7 @@ if __name__ == "__main__":
 						converter.convert(lst, ngcs[i])
 
 						if converter.status != "ok" or len(converter.errors) > 0 or len(converter.unparsible) > 0:
+							print(converter.status)
 							errors = [f"Error in file {fname}"] + gui_errors + converter.errors
 							window["-ERRERS-"].update(errors)
 							window["-UNPARSIBLE-"].update(converter.unparsible)

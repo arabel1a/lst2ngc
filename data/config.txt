@@ -1,4 +1,5 @@
 {
     "use_line_numbers":True,
-    "initial_file_path":""
+    "keep_old_line_numbers":True,
+    "initial_file_path":"/home/arabella/lst_examples"
 }
