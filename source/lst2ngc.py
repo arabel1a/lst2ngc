@@ -424,7 +424,7 @@ class LST2NGC(Converter):
             for key in self.groups:
                 values = self.groups[key]
                 pattern = key + r'\s*\(\s*\"([^\"]+)\"\s*\)'
-                goodline = '   ;appply {0} parameters {1} \n    o{2} call\n    {3}'
+                goodline = "   ;appply {0} parameters '{1}' \n    o{2} call\n    {3}"
                 rules[pattern] = lambda x, key=copy(key),values=copy(values), goodline=copy(goodline): (goodline.format(
                                         key,
                                         x[1],
