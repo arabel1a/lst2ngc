@@ -1,8 +1,0 @@
-{
-    'TC_TOOL_TECH'     : ["PTT", "M153 \n M165 P#<_PRESSERFOOT_ON>"],
-    'TC_SHEET_TECH'   : ["SHEET_TECH", " M153"],
-    'TC_SHEET_LOAD'   : ["SHEET_LOAD", " M651"],
-    'TC_SHEET_UNLOAD' : ["SHEET_UNLOAD", " M652"],
-    'TC_PART_UNLOAD'  : ["PART_UNLOAD", " M667"],
-    'TC_SHEET_REPOSIT': ['RPO', " M610"]
-}
