@@ -397,7 +397,7 @@ class LST2NGC(Converter):
                     if self.toolchange_cntr > 0:
                         goodline +=f" o{100 + self.toolchange_cntr} endif \n"
                     self.toolchange_cntr += 1
-                    goodline += f" o{100 + self.toolchange_cntr} if [#<#<_hal[start_from]>> LE {self.toolchange_cntr}]\n"
+                    goodline += f" o{100 + self.toolchange_cntr} if [#<_hal[start_from]> LE {self.toolchange_cntr}]\n"
                 goodline += f"    T#<_TOOL_{self.sections['WZG_CALLS'].config.loc[toolcode, 'Werkzeugaufrufnummer']}>"
                 return goodline, "", "OK"
             rules[r'TC_TOOL_NO\s*\(\s*\"(\d+)\"\s*\)'] = Toolno_proc
