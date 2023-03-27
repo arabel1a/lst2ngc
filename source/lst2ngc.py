@@ -391,12 +391,16 @@ class LST2NGC(Converter):
                 rules[f"({code})(\D)"] = lambda x, code=copy(code): (self.codes_renames[code],  x[2], "OK")                
                 
             #coordinates
-            for coord in ["F", "X", "Y", "I", "J", "SPP="]:
+            for coord in ["F", "X", "Y", "I", "J"]:
                 coord_pattern = coord + float_patern
                 verd = "OK"
-                if coord != 'F' and coord != "SPP=":
+                if coord != 'F':
                     verd = "MOVE"
                 rules[ coord_pattern ] = lambda x,coord=copy(coord), verd=copy(verd): (f"{coord}{x[1]}", "", verd )
+            
+            #nibbling step size
+            spp_pattern = "SPP=" + float_patern
+            rules[ spp_pattern ] = lambda x,coord=copy(coord), verd=copy(verd): (f"#<_spp>={x[1]}", "", verd )
 
             #rotary coordinates -- forced to move simultaneously
             rules[ r"C[12]\s*=DC\(" + float_patern + r"\s*\)"] = lambda x: ("A" + x[1] + " B" + x[1], "", "MOVE" )
