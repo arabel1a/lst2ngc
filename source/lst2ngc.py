@@ -65,7 +65,8 @@ def PROGRAMM_process(self=None):
             conf = self.config.loc[subr_name,'Bearbeitungszeit'].split("\n")
             assert re.match(r"\s*START_TEXT\s*", conf[0]), f"START_TEXT missing in sub {subr_name}"
             assert re.match(r"\s*STOP_TEXT\s*", conf[-1]), f"STOP_TEXT missing in sub {subr_name}"
-            self.o_code.append(f"\no{self.converter.subroutines[subr_name]} sub")
+            assert self.name, subr_name in self.converter.subroutines
+            self.o_code.append(f"\no{self.converter.subroutines[self.name, subr_name]} sub")
             self.o_code.append(f"    ;definition of {subr_name} subroutine")
             for line in conf[1:-1]:
                 line = line.strip()
@@ -75,7 +76,7 @@ def PROGRAMM_process(self=None):
                     self.o_code.append("   " + good_line)
                 if(len(self.converter.errors) > 0):
                     return
-            self.o_code.append(f"\n o{self.converter.subroutines[subr_name]} endsub")
+            self.o_code.append(f"\n o{self.converter.subroutines[self.name, subr_name]} endsub")
     except Exception as e:
         self.converter.errors.append(f"Synthesis section {self.name} error: {e}")
 
@@ -125,7 +126,7 @@ def header_gen(self = None):
             self.o_code += [ f";Material:        {self.converter.sections['EINRICHTEPLAN_INFO'].config.iloc[0].loc['Material-ID']}" ]
             self.o_code += [ self.converter.config['defaults']['g_code_defaults'] ]
             main_subr_name = self.converter.sections['EINRICHTEPLAN_INFO'].config.iloc[0].loc['Programmnummer (ohne P!)']
-            main_subr_no = self.converter.subroutines[main_subr_name]
+            main_subr_no = self.converter.subroutines["PROGRAMM",   main_subr_name]
             self.o_code += [ f"o{main_subr_no} call" ]
             self.o_code += [ "M2" ]
         except Exception as e:
@@ -268,7 +269,7 @@ class LST2NGC(Converter):
                         "WZG_STAMM"           : {
                             "pname": "WST",
                             "param_file_name": -1,
-                            "required":{}
+                            "required":{                                        }
                             },
                         
                         "SHEET_REPOSIT"       : {
