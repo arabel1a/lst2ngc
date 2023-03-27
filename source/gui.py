@@ -13,7 +13,7 @@ if __name__ == "__main__":
 	ngcs = []
 	gui_errors = []
 	try: 
-		config = configparser.ConfigParser()
+		config = configparser.ConfigParser(comment_prefixes=("///", "###"))
 		config.read(f'{os.path.realpath(os.path.dirname(__file__))}/../config.txt')
 	except Exception as e:
 		gui_errors.append(f"Error opening сonfig file: {e}")
