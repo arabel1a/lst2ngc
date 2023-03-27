@@ -117,9 +117,9 @@ def header_gen(self = None):
             self.o_code += [ f";Date:            {self.converter.sections['EINRICHTEPLAN_INFO'].config.iloc[0].loc['Datum']}" ]
             self.o_code += [ f";File:            {self.converter.sections['EINRICHTEPLAN_INFO'].config.iloc[0].loc['Tafelname']}" ]
             self.o_code += [ f";Material:        {self.converter.sections['EINRICHTEPLAN_INFO'].config.iloc[0].loc['Material-ID']}" ]
-            self.o_code += self.converter.config['defaults']['move_subroutine']
+            self.o_code += [ self.converter.config['defaults']['move_subroutine'] ]
 
-            self.o_code += self.converter.config['defaults']['g_code_defaults']
+            self.o_code += [ self.converter.config['defaults']['g_code_defaults'] ]
             main_subr_name = self.converter.sections['EINRICHTEPLAN_INFO'].config.iloc[0].loc['Programmnummer (ohne P!)']
             main_subr_no = self.converter.subroutines[main_subr_name]
             self.o_code += [ f"o{main_subr_no} call" ]
