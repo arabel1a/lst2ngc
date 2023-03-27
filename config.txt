@@ -17,8 +17,8 @@ output_extension= NGC, ngc
 # codes which run bwfore amy programm
 g_code_defaults = 
     #<_nibbling> = 0
-    "#<_punch> = 0"
-    "#<_spp> = 0"
+    #<_punch> = 0
+    #<_spp> = 0
     #<_PRESSERFOOT_ON> = 0" ]
     #<_TANGTOOL_EN> = 0
     G90

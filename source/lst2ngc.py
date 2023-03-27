@@ -111,14 +111,13 @@ def split_sections_data(self = None):
 def header_gen(self = None):
         try:
             assert len(self.converter.sections['EINRICHTEPLAN_INFO'].data) == 1, "main programm number is not 1"
+            self.o_code += [ self.converter.config['defaults']['move_subroutine'] ]
             self.o_code += [ "\n\n;###############################################################################" ]
             self.o_code += [ f";Machine name:    {self.converter.sections['EINRICHTEPLAN_INFO'].config.iloc[0].loc['Firma']}" ]
             self.o_code += [ f";Pragrammer name: {self.converter.sections['EINRICHTEPLAN_INFO'].config.iloc[0].loc['Bearbeiter']}" ]
             self.o_code += [ f";Date:            {self.converter.sections['EINRICHTEPLAN_INFO'].config.iloc[0].loc['Datum']}" ]
             self.o_code += [ f";File:            {self.converter.sections['EINRICHTEPLAN_INFO'].config.iloc[0].loc['Tafelname']}" ]
             self.o_code += [ f";Material:        {self.converter.sections['EINRICHTEPLAN_INFO'].config.iloc[0].loc['Material-ID']}" ]
-            self.o_code += [ self.converter.config['defaults']['move_subroutine'] ]
-
             self.o_code += [ self.converter.config['defaults']['g_code_defaults'] ]
             main_subr_name = self.converter.sections['EINRICHTEPLAN_INFO'].config.iloc[0].loc['Programmnummer (ohne P!)']
             main_subr_no = self.converter.subroutines[main_subr_name]
