@@ -33,7 +33,7 @@ def param_section_process(self=None):
         for conf_name in self.config.index:
             # print(f"CONFIG: {conf_name}")
 
-            assert self.converter.subroutines[conf_name] == self.config.loc[conf_name].subroutine_no, "internal error qith planning subr no"
+            assert self.converter.subroutines[self.name, conf_name] == self.config.loc[conf_name].subroutine_no, "internal error qith planning subr no"
             # subr = self.converter.subroutines[conf[1]]
             subr = self.config.loc[conf_name].subroutine_no
             self.o_code += [f'o{subr} sub']
@@ -90,18 +90,22 @@ def split_sections_data(self = None):
         self.conf_names = []
         self.param_names += ["subroutine_no"]
 
+        if self.name == "WZG_STAMM":
+            self.param_names = self.param_names[1:]
+            self.metadata['param_num'] -= 1
+
         for i, conf in enumerate(self.data):
-            assert len(conf) - 1 == self.metadata['param_num'], "parsed param number mismatches with declared one"
+            assert len(conf) - 1 == self.metadata['param_num'], f"parsed param number {len(conf)} mismatches with declared one{self.metadata['param_num']}"
+            
             c_name = conf[1]
-            assert c_name not in self.conf_names or self.name == 'WZG_CALLS'  or self.name == 'WZG_STAMM', f"non-unique conf {c_name} in section {self.name}"
-            self.conf_names.append(c_name)
             self.data[i] = conf[2:]
-            subr = self.converter.subroutines[c_name]
+            
+            assert c_name not in self.conf_names or self.name == 'WZG_CALLS', f"non-unique conf {c_name} in section {self.name}"
+            self.conf_names.append(c_name)
+            
+            subr = self.converter.subroutines[(self.name, c_name)]
             self.data[i].append(subr)
 
-        # print(len(self.data), len(self.conf_names), len(self.param_names) )
-
-        # data_T =  list(map(list, zip(*self.data)))
         self.config =  pd.DataFrame(data=self.data, index=self.conf_names, columns=self.param_names[1:])
 
 
@@ -312,7 +316,7 @@ class LST2NGC(Converter):
                 'TC_SHEET_LOAD'   : ["SHEET_LOAD", "M651"],
                 'TC_SHEET_UNLOAD' : ["SHEET_UNLOAD", "M652"],
                 'TC_PART_UNLOAD'  : ["PART_UNLOAD", "M667"],
-                'TC_SHEET_REPOSIT': ['RPO', " M610"]
+                'TC_SHEET_REPOSIT': ['SHEET_REPOSIT', " M610"]
             }
             self.coord_rename = {"C1":" A", "C2":" B"}
             
@@ -394,6 +398,7 @@ class LST2NGC(Converter):
             def Toolno_proc(match):
                 goodline=""
                 toolcode = "'" + match[1] + "'"
+                # goodline += f"    T#<_TOOL_{tool_code}>"
                 if self.config != {}  and self.config['behaviour'].getboolean("start_from"):
                     if self.toolchange_cntr > 0:
                         goodline +=f" o{100 + self.toolchange_cntr} endif \n"
@@ -402,6 +407,7 @@ class LST2NGC(Converter):
                 tool_code = self.sections['WZG_CALLS'].config.loc[toolcode, 'Werkzeugaufrufnummer']
                 if type(tool_code) is not str:
                     tool_code = tool_code.max()
+                goodline += "    (MSG, " + self.sections['WZG_STAMM'].config.loc[toolcode, "Bemerkung"] + ")\n"
                 goodline += f"    T#<_TOOL_{tool_code}>"
                 return goodline, "", "OK"
             rules[r'TC_TOOL_NO\s*\(\s*\"(\d+)\"\s*\)'] = Toolno_proc
@@ -415,7 +421,7 @@ class LST2NGC(Converter):
                 rules[pattern] = lambda x, key=copy(key),values=copy(values), goodline=copy(goodline): (goodline.format(
                                         key,
                                         x[1],
-                                        str(self.subroutines["'" + x[1]+ "'"] ),
+                                        str(self.subroutines[values[0], "'" + x[1]+ "'"] ),
                                         values[1]
                                         ),
                                         "",
@@ -524,27 +530,29 @@ class LST2NGC(Converter):
 
 
             def add_conf(match):
-                # if self.current_section != "PROGRAMM":
-                    conf_str = match[0].split(",")
-                    if re.fullmatch(r"\s*", conf_str[-1]):
-                        conf_str = conf_str[:-1]
-                    self.sections[self.current_section].data.append(conf_str)
+                conf_str = match[0].split(",")
+                if self.current_section == "WZG_STAMM":
+                    conf_str = conf_str[1:]
 
-                    self.subroutines[conf_str[1]] = len(self.subroutines) + 1
-                    if self.current_section == "WZG_STAMM":
-                        sub = conf_str[13]
-                    else:
-                        sub = conf_str[1]
-                    if len(sub) <= 2:
-                        print(match[0])
-                    sub_pattern = f'([^\"]|^){sub[1:-1]}([^\"]|$)'
-                    self.sections["PROGRAMM"].add_processor_rule(
-                        sub_pattern,
-                        lambda x, sub=copy(sub) : ('\n    o{0} call\n'.format(self.subroutines[sub]), x[1]+x[2], "OK" )
-                        )
-                    # print(self.current_section)
-                # else:
-                #     self.errors.append('DA in section PROGRAMM')
+                if re.fullmatch(r"\s*", conf_str[-1]):
+                    conf_str = conf_str[:-1]
+                self.sections[self.current_section].data.append(conf_str)
+
+                
+                sub = conf_str[1]
+                if len(sub) <= 2:
+                    print(match[0])
+                sub_id = self.current_section, sub
+
+                assert sub_id not in self.subroutines or self.current_section == "WZG_CALLS" , f"subroutine {sub} already defined"
+                if self.current_section != "WZG_CALLS" or sub_id not in self.subroutines:
+                    self.subroutines[sub_id] = len(self.subroutines) + 1
+
+                sub_pattern = f'([^\"]|^){sub[1:-1]}([^\"]|$)'
+                self.sections["PROGRAMM"].add_processor_rule(
+                    sub_pattern,
+                    lambda x, sub=copy(sub_id) : ('\n    o{0} call\n'.format(self.subroutines[sub_id]), x[1]+x[2], "OK" )
+                    )
 
             self.add_analysis_rule(
                 r"^DA,.*$",
