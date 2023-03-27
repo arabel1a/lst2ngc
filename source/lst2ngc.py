@@ -393,10 +393,11 @@ class LST2NGC(Converter):
             def Toolno_proc(match):
                 goodline=""
                 toolcode = "'" + match[1] + "'"
-                if self.toolchange_cntr > 0:
-                    goodline +=f" o{100 + self.toolchange_cntr} endif \n"
-                self.toolchange_cntr += 1
-                goodline += f" o{100 + self.toolchange_cntr} if [#<_start_from> LE {self.toolchange_cntr}]\n"
+                if self.config != {}  and self.config['behaviour'].getboolean("start_from"):
+                    if self.toolchange_cntr > 0:
+                        goodline +=f" o{100 + self.toolchange_cntr} endif \n"
+                    self.toolchange_cntr += 1
+                    goodline += f" o{100 + self.toolchange_cntr} if [#<#<_hal[start_from]>> LE {self.toolchange_cntr}]\n"
                 goodline += f"    T#<_TOOL_{self.sections['WZG_CALLS'].config.loc[toolcode, 'Werkzeugaufrufnummer']}>"
                 return goodline, "", "OK"
             rules[r'TC_TOOL_NO\s*\(\s*\"(\d+)\"\s*\)'] = Toolno_proc
