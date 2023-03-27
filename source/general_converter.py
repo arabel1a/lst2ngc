@@ -30,6 +30,7 @@ class Section:
     def dummy_pp(self, verdict, line):
         if 'unparsible' in verdict:
             self.converter.unparsible.append(line)
+            print("UNPARSIBLE")
             return ""
         return line
 
@@ -38,6 +39,7 @@ class Section:
             for line in self.i_code:
                 line = line.strip()
                 verdict, processed  = self.process_line(line)
+                # print(verdict)
                 good_line = self.post_processor(verdict, processed)
                 if not re.fullmatch(r"\s*", good_line):
                     self.o_code.append(good_line)

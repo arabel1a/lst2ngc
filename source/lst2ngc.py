@@ -71,6 +71,7 @@ def PROGRAMM_process(self=None):
             for line in conf[1:-1]:
                 line = line.strip()
                 verdict, processed  = self.process_line(line)
+                self.dummy_pp(verdict, line)
                 good_line = self.post_processor(verdict, processed)
                 if not re.fullmatch(r"\s*", good_line):
                     self.o_code.append("   " + good_line)
@@ -173,7 +174,7 @@ def postprocessor(verdict, line, conv= None):
         return line
     except Exception as e:
         if conv is not None:
-            conv.errors.append(f"Error during move_prepare: {e} while processing {_line}")
+            conv.errors.append(f"Error during move_prepare: {e} while processing {line}")
         else:
             print(f"Error during move_prepare: {e}")
 
@@ -461,7 +462,8 @@ class LST2NGC(Converter):
             
             # TANGTOOL
             rules["TC_TANGTOOL_OFF"] = lambda x: ("#<_TANGTOOL_EN>=0\n#<_TANGTOOL_P>=0", "", "OK")
-            rules[r"TC_TANGTOOL_ON\s*\(\s*("+float_patern+r")\s*"] = lambda x: (f"#<_TANGTOOL_EN>=1\n#<_TANGTOOL_P>={x[1]}", "", "OK")
+            tang_pattern = r"TC_TANGTOOL_ON\s*\(\s*" + float_patern + r"\s*\)"
+            rules[tang_pattern] = lambda x: (f"#<_TANGTOOL_EN>=1\n#<_TANGTOOL_P>={x[1]}", "", "OK")
 
             #skipped codes
             rules["TC_CLAMP_CYC"] = lambda x: ("","", "skip")
