@@ -219,6 +219,12 @@ class LST2NGC(Converter):
                             "param_file_name": 2,
                             "required": {
                                             'Blechmass Z' : 3
+                                            'Magazinplatz Pratze 1':9, 
+                                            'Magazinplatz Pratze 2':10,
+                                            'Magazinplatz Pratze 3':11, 
+                                            'Magazinplatz Pratze 4':12,
+                                            'Magazinplatz Pratze 5':15, 
+                                            'Magazinplatz Pratze 6':16,  
                                         }
                             },
 
