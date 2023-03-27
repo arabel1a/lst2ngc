@@ -9,7 +9,7 @@ I do not believe that someone will face the same problem and would need this cod
 
 In linux, go to project folder and install dependencies by executuing
 ```
-python3 -m pip install requirements
+python3 -m pip install -r requirements
 ```
 In windows install this packages with common way you insatll python packages :) [i've never done this]
 
