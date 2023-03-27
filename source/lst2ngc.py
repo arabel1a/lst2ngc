@@ -400,7 +400,7 @@ class LST2NGC(Converter):
             
             #nibbling step size
             spp_pattern = "SPP=" + float_patern
-            rules[ spp_pattern ] = lambda x: (f"#<_spp>={x[1]}", "", OK)
+            rules[ spp_pattern ] = lambda x: (f"#<_spp>={x[1]}", "", "OK")
 
             #rotary coordinates -- forced to move simultaneously
             rules[ r"C[12]\s*=DC\(" + float_patern + r"\s*\)"] = lambda x: ("A" + x[1] + " B" + x[1], "", "MOVE" )
