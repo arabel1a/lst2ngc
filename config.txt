@@ -1,0 +1,109 @@
+# Usage:
+# Comments are starting with '#' or ';'
+# Inline comments can be harmful, so dont do so
+# [section]   <-- parameter section
+# key = value <-- parameter assigment
+# key = value <-- same as prevous
+# By default only in an empty line.
+
+
+[defaults]
+# OPEN/SAVE dialog defaults 
+input_folder    = /home/arabella/lst_examples
+input_extension = LST, lst
+output_folder   = /home/arabella/lst_examples
+output_extension= NGC, ngc
+
+# codes which run bwfore amy programm
+g_code_defaults = 
+    #<_nibbling> = 0
+    "#<_punch> = 0"
+    "#<_spp> = 0"
+    #<_PRESSERFOOT_ON> = 0" ]
+    #<_TANGTOOL_EN> = 0
+    G90
+    M666
+    M665
+    M128
+    M188
+    G90 G1 F5000 A0 B0
+    G59
+    o123 if [#<_y> LE 0 ]
+        G90 G1 F5000 Y0
+    o123 endif
+    G54
+    G1 F108167
+    G21
+
+
+
+[line numbers]
+# enables Nxxx words in frames
+enable = True 
+# leaving source line numbers 
+keep_old =  True
+
+[behaviour]
+# if enabled, you will NOT be able to choose name for output file anymore
+# all selected files (choosen with shift + click) will be saved with their
+# original names, but new extension 
+multple_files_allowed = True
+
+# can be "error" or keep. "error" will fall, "keep" -- just add the same 
+# frame to outout file
+unparsible = error
+
+# setting #<_start_from> parameter we can achieve startfrom different toolchanges
+start_from = True
+
+[simple replacements]
+G70: G20
+G71: G21
+G01: G1
+G00: G0
+G02: G2
+G03: G3
+M30: M30
+TC_TOOL_CHANGE: M6
+TC_SUCTION_ON: M108
+TC_SUCTION_OFF: M109
+PRESSERFOOT_ON: #<_PRESSERFOOT_ON> = 1
+    M165 P#<_PRESSERFOOT_ON>
+PRESSERFOOT_OFF: #<_PRESSERFOOT_ON> = 0
+    M165 P#<_PRESSERFOOT_ON>
+G90: G90
+G91: G91
+G53: G53
+
+                
+[parameter groups]
+groups = TC_TOOL_TECH,TC_SHEET_TECH,TC_SHEET_LOAD,TC_SHEET_UNLOAD,TC_PART_UNLOAD,TC_SHEET_REPOSIT
+    
+[TC_TOOL_TECH]    
+# a fancy name for comments 
+config_name  = TOOL_TECH
+# how to apply
+replace_with = M153
+        M165 P#<_PRESSERFOOT_ON>
+    
+[TC_SHEET_TECH]
+config_name  = SHEET_TECH
+replace_with = M153
+
+[TC_SHEET_LOAD]
+config_name  = SHEET_LOAD
+replace_with = M651
+
+[TC_SHEET_UNLOAD]
+config_name  = SHEET_UNLOAD
+replace_with = M652
+
+[TC_PART_UNLOAD]
+config_name  = PART_UNLOAD
+replace_with = M667
+
+[TC_SHEET_REPOSIT]
+config_name  = REPOSIT
+replace_with = M610
+
+

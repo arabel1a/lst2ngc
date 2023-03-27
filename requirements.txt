@@ -1,0 +1,4 @@
+PySimpleGUI
+configparser
+re
+pandas

@@ -3,42 +3,66 @@
 
 import PySimpleGUI as sg
 import os.path
-from lst2ngc import Converter
+from lst2ngc import LST2NGC
 import codecs
-import ast
+import configparser
+import re
 
 if __name__ == "__main__":
 	lsts = []
 	ngcs = []
 	gui_errors = []
 	try: 
-		# Configuration
-		file = codecs.open(f'{os.path.realpath(os.path.dirname(__file__))}/../data/config.txt','r',encoding='utf-8')
-		contents = file.read()
-		config = ast.literal_eval(contents)
-		file.close()
+		config = configparser.ConfigParser()
+		config.read(f'{os.path.realpath(os.path.dirname(__file__))}/../config.txt')
 	except Exception as e:
 		gui_errors.append(f"Error opening сonfig file: {e}")
 
 	try:
+		folder_ngc = config['defaults']['output_folder']
+		in_extensions 	= tuple(["*." + x.strip() for x in config['defaults']['input_extension'].split(',')])
+		out_extensions 	= tuple(["*." + x.strip() for x in config['defaults']['output_extension'].split(',')])
+
 		_file_lst =[
-				sg.Text("LST File"),
-				sg.In(size=(25, 1), enable_events=True, key="-LST FILE-"),
+        sg.Text("LST File"),
+        sg.In(size=(25, 1), enable_events=True, key="-LST FILE-"),
+        sg.FileBrowse(
+            initial_folder=config['defaults']['input_folder'],
+            file_types=(("TOPS file", in_extensions),("ALL Files", "*.*"))
+                       ),
+	    ],
+
+
+		_file_ngc =[
+		        sg.Text("Convert to"),
+		        sg.In(size=(25, 1), enable_events=True, key="-NGC FILE-"),
+		        sg.SaveAs(
+                    initial_folder=config['defaults']['output_folder'],
+		            file_types=(
+		            	("LINUXCNC file", out_extensions),
+		            ("ALL Files", ". *"))
+		                       ),
+	    ],
+
+		_files_lst =[
+				sg.Text("LST Files"),
+				sg.In(size=(25, 1), enable_events=True, key="-LST FILES-"),
 				sg.FilesBrowse(
-					initial_folder=config["initial_file_path"],
-					file_types=(("TOPS file", ("*.LST", "*.lst")),("ALL Files", "*.*"))
+					initial_folder=config['defaults']['input_folder'],
+					file_types=(("TOPS file", in_extensions),("ALL Files", "*.*"))
 							),
 				]
 
+		_folder_ngc =[
+				sg.Text("NGC folder"),
+				sg.In(size=(25, 1), enable_events=True, key="-NGC FOLDER-"),
+				sg.FolderBrowse(
+					initial_folder=config['defaults']['output_folder'],
+					),
+				]
+		
 		_num_files = [sg.Text("Selected 0 files", key="NUM_FILES")]
-		# _file_ngc =[
-		#		 sg.Text("Convert to"),
-		#		 sg.In(size=(25, 1), enable_events=True, key="-NGC FILE-"),
-		#		 sg.SaveAs(
-		#			 initial_folder="/home/tc2000r/Desktop/TC2000R/nc_files",
-		#			 file_types=(("LINUXCNC file", ("*.ngc", "*.NGC")),("ALL Files", ". *"))
-		#						),
-		#	 ],
+
 
 		# For now will only show the name of the file that was chosen
 		_convert =[
@@ -63,17 +87,30 @@ if __name__ == "__main__":
 			])
 		]
 
-		# ----- Full layout -----
+		
 
-		layout = [
-			_file_lst,
-			# _file_ngc,
-			_num_files,
-			_convert,
-			_bad_functions,
-			_errors
-		]
 
+
+		# stacking them
+		layout = []
+		
+		if config['behaviour'].getboolean("multple_files_allowed"):
+			layout = [
+				_files_lst,
+				_folder_ngc,
+				_num_files,
+				_convert,
+				_bad_functions,
+				_errors
+			]
+		else:
+			layout = [
+				_file_lst,
+				_file_ngc,
+				_convert,
+				_bad_functions,
+				_errors
+			]
 		window = sg.Window("LST2NGC Converter", layout, auto_size_text=True)
 	except Exception as e:
 		gui_errors.append(f"Error initializing gui: {e}")
@@ -86,66 +123,80 @@ if __name__ == "__main__":
 		while True:	
 			event, values = window.read()
 
-			# Закрытие окна
-			if event == "Exit" or event == sg.WIN_CLOSED:
-				break 
+   			########## Single file mode ###########
+			if event == "-LST FILE-":
+				fname_lst = values["-LST FILE-"]
+				lsts = [ fname_lst ]
+				ngcs = []
+				window["progress"].update(0)
+				window["READY"].update(visible=False)
+				window.refresh()
+			    
+			elif event == "-NGC FILE-":  # A file was chosen from the listbox
+				fname_ngc = values["-NGC FILE-"]
+				ngcs = [fname_ngc]
+				window["progress"].update(0)
+				window["READY"].update(visible=False)
+				window.refresh()
 
-			# выбрали файл LST
-			elif event == "-LST FILE-":
-				fname_lst_string = values["-LST FILE-"]
+
+			########## Multiple file mode ###########        
+			
+			elif event == "-LST FILES-":
+				fname_lst_string = values["-LST FILES-"]
 				lsts = fname_lst_string.split(";")
 				ngcs = []
 				files_ok = True
 				for fname in lsts:
-					if fname == "":
-						files_ok=False
-						continue
 					if not os.path.isfile(fname):
 						gui_errors.append(f"{fname} does not exist or isn't a file")
 						files_ok = False
-					fname = "/".join(fname.split("/")[:-1] + [fname.split("/")[-1].replace(".LST", ".ngc").replace(".lst", ".ngc")])
-					ngcs.append(fname)
-
+					
 				window["-ERRERS-"].update(gui_errors)
 				gui_errors = []
 				if not files_ok:
 					lsts = []
-					ngcs = []
 					continue
+				for fname in lsts:
+
+					ngc_name = os.path.join(folder_ngc, fname.split("/")[-1])
+					for ex in in_extensions: 
+						ngc_name = re.sub(ex[1:] + r"$", out_extensions[0][1:], ngc_name)
+					ngcs.append(ngc_name)
 				
 				window["NUM_FILES"].update(f"Selected {len(lsts)} files")
 				window["progress"].update(0)
 				window["READY"].update(visible=False)
 				window.refresh()
 				
-			elif event == "-NGC FILE-":  # A file was chosen from the listbox
-				fname_ngc = values["-NGC FILE-"]
-		#		 fname_ngc = sg.tk.filedialog.asksaveasfilename(
-		#			 defaultextension='ngc',
-		#			 filetypes=(("LINUXCNC file", "*.ngc"), ("All Files", "*.*")),
-		#			 initialdir=script_path,
-		#			 initialfile="azazaz.ngc",			 # Option added here
-		#			 parent=window.TKroot,
-		#			 title="Save As"
-		#		 )
+			elif event == "-NGC FOLDER-":  # A file was chosen from the listbox
+				folder_ngc = values["-NGC FOLDER-"]
+				ngcs = []
+				for fname in lsts:
+					ngc_name = os.path.join(folder_ngc, fname.split("/")[-1].replace(".LST", ".ngc").replace(".lst", ".ngc"))
+					ngcs.append(ngc_name)
+				window["progress"].update(0)
+				window["READY"].update(visible=False)
+				window.refresh()
+				
+
+			elif event == "Exit" or event == sg.WIN_CLOSED:
+				break 
 
 			elif event == "-CONVERT-":
-		#		 if fname_ngc != '' and fname_lst!="":
+				print(lsts, ngcs)
+				assert  len(lsts) == len(ngcs)
 				fileno = len(lsts)
 				if fileno == 0:
 					window["-ERRERS-"].update(["File not choosen"] + gui_errors)
 				else:	
 					ok = True
 					for i, lst in enumerate(lsts):
-						converter = Converter()
-						# print(lst, ngcs[i])
-						# thr = threading.Thread(target=analysis, args=(lst, ngcs[i]))
-						# thr.start()
+						converter = LST2NGC(config=config)
 						converter.convert(lst, ngcs[i])
-
 						if converter.status != "ok" or len(converter.errors) > 0 or len(converter.unparsible) > 0:
 							print(converter.status)
-							errors = [f"Error in file {fname}"] + gui_errors + converter.errors
+							errors = [f"Error in file {lst}"] + gui_errors + converter.errors
 							window["-ERRERS-"].update(errors)
 							window["-UNPARSIBLE-"].update(converter.unparsible)
 							ok = False
