@@ -93,6 +93,7 @@ def split_sections_data(self = None):
         for i, conf in enumerate(self.data):
             assert len(conf) - 1 == self.metadata['param_num'], "parsed param number mismatches with declared one"
             c_name = conf[1]
+            assert c_name not in self.conf_names or self.name == 'WZG_CALLS'  or self.name == 'WZG_STAMM', f"non-unique conf {c_name} in section {self.name}"
             self.conf_names.append(c_name)
             self.data[i] = conf[2:]
             subr = self.converter.subroutines[c_name]
@@ -132,38 +133,38 @@ def postprocessor(verdict, line, conv= None):
         Handling or vericts
     '''
     try:
-        line = re.sub(r"\s+", " ", line)
         if re.fullmatch(r"\s*(?:N\d+)?\s*", line):
             return ""
         if "MOVE" in verdict:
-                move_params  = {}
-                _line = line.strip().split(' ')
-                for _ in _line:
-                    if _[0] != 'G':
-                        move_params[_[0]] = _[1:]
+            line = re.sub(r"\s+", " ", line)
+            move_params  = {}
+            _line = line.strip().split(' ')
+            for _ in _line:
+                if _[0] != 'G':
+                    move_params[_[0]] = _[1:]
+                else:
+                    move_params[_] = 1
+            call = ' o2 call '
+            code_8, code_9 = 0, 0
+            for symbol in range(1, 100):
+                if symbol not in symbols:
+                    continue
+                if symbols[symbol] not in move_params:
+                    if symbols[symbol][0] != 'G' and symbols[symbol][0] != 'M':
+                        move_params[symbols[symbol]] = 123456789987654321228
                     else:
-                        move_params[_] = 1
-                call = ' o2 call '
-                code_8, code_9 = 0, 0
-                for symbol in range(1, 100):
-                    if symbol not in symbols:
-                        continue
-                    if symbols[symbol] not in move_params:
-                        if symbols[symbol][0] != 'G' and symbols[symbol][0] != 'M':
-                            move_params[symbols[symbol]] = 123456789987654321228
-                        else:
-                            move_params[symbols[symbol]] = 0
-                        
-                    if symbol < 10:
-                        call += '[{0}] '.format(move_params[symbols[symbol]])
-                    else:
-                        po = symbol % 10
-                        if (symbol // 10  == 8):
-                            code_8 += move_params[symbols[symbol]] * 2 ** po
-                        elif (symbol // 10  == 9):
-                            code_9 += move_params[symbols[symbol]] * 2 ** po
-                call += '[{0}] [{1}]'.format(code_8, code_9)
-                return call
+                        move_params[symbols[symbol]] = 0
+                    
+                if symbol < 10:
+                    call += '[{0}] '.format(move_params[symbols[symbol]])
+                else:
+                    po = symbol % 10
+                    if (symbol // 10  == 8):
+                        code_8 += move_params[symbols[symbol]] * 2 ** po
+                    elif (symbol // 10  == 9):
+                        code_9 += move_params[symbols[symbol]] * 2 ** po
+            call += '[{0}] [{1}]'.format(code_8, code_9)
+            return call
         return line
     except Exception as e:
         if conv is not None:
@@ -398,7 +399,10 @@ class LST2NGC(Converter):
                         goodline +=f" o{100 + self.toolchange_cntr} endif \n"
                     self.toolchange_cntr += 1
                     goodline += f" o{100 + self.toolchange_cntr} if [#<_hal[start_from]> LE {self.toolchange_cntr}]\n"
-                goodline += f"    T#<_TOOL_{self.sections['WZG_CALLS'].config.loc[toolcode, 'Werkzeugaufrufnummer']}>"
+                tool_code = self.sections['WZG_CALLS'].config.loc[toolcode, 'Werkzeugaufrufnummer']
+                if type(tool_code) is not str:
+                    tool_code = tool_code.max()
+                goodline += f"    T#<_TOOL_{tool_code}>"
                 return goodline, "", "OK"
             rules[r'TC_TOOL_NO\s*\(\s*\"(\d+)\"\s*\)'] = Toolno_proc
                         
