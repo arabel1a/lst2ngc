@@ -408,7 +408,7 @@ class LST2NGC(Converter):
                 tool_code = self.sections['WZG_CALLS'].config.loc[toolcode, 'Werkzeugaufrufnummer']
                 if type(tool_code) is not str:
                     tool_code = tool_code.max()
-                goodline += "    (MSG, " + self.sections['WZG_STAMM'].config.loc[toolcode, "Bemerkung"] + ")\n"
+                goodline += "    (MSG, " + self.sections['WZG_STAMM'].config.loc[toolcode, "Bemerkung"][-1:1] + ")\n"
                 goodline += f"    T#<_TOOL_{tool_code}>"
                 return goodline, "", "OK"
             rules[r'TC_TOOL_NO\s*\(\s*\"(\d+)\"\s*\)'] = Toolno_proc
