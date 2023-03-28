@@ -199,8 +199,8 @@ move_subroutine =
                 ; угол поворота осей
                   #<comp_ang> = [[[- [ATAN[#<little_step_y>]/[#<little_step_x>]]] MOD 360]]; + #<dir> * #<alpha> ] MOD 360]
                   ; нправление
-                  #<dir_rot_a> = [-2 * [[[[#<comp_ang> - #<_a> MOD 360] MOD 360 ] GT 180] - 0.5]]
-                  #<dir_rot_b> = [-2 * [[[[#<comp_ang> - #<_b> MOD 360] MOD 360 ] GT 180] - 0.5]]
+                  #<dir_rot_a> = [2 * [[[[#<comp_ang> - #<_a> MOD 360] MOD 360 ] GT 180] - 0.5]]
+                  #<dir_rot_b> = [2 * [[[[#<comp_ang> - #<_b> MOD 360] MOD 360 ] GT 180] - 0.5]]
                   ; смещение
                   #<dir_offcet_a> = [[#<dir_rot_a> * [#<comp_ang> - #<_a> MOD 360] ] MOD 360 ] 
                   #<dir_offcet_b> = [[#<dir_rot_a> * [#<comp_ang> - #<_b> MOD 360] ] MOD 360 ]
@@ -256,10 +256,10 @@ M30: M30
 TC_TOOL_CHANGE: M6
 TC_SUCTION_ON: M108
 TC_SUCTION_OFF: M109
-PRESSERFOOT_ON: ###<_PRESSERFOOT_ON> = 1
-    M165 P###<_PRESSERFOOT_ON>
-PRESSERFOOT_OFF: ###<_PRESSERFOOT_ON> = 0
-    M165 P###<_PRESSERFOOT_ON>
+PRESSERFOOT_ON: #<_PRESSERFOOT_ON> = 1
+    M165 P#<_PRESSERFOOT_ON>
+PRESSERFOOT_OFF: #<_PRESSERFOOT_ON> = 0
+    M165 P#<_PRESSERFOOT_ON>
 G90: G90
 G91: G91
 G53: G53
@@ -273,7 +273,7 @@ groups = TC_TOOL_TECH,TC_SHEET_TECH,TC_SHEET_LOAD,TC_SHEET_UNLOAD,TC_PART_UNLOAD
 config_name  = TOOL_TECH
 ### how to apply
 replace_with = M153
-        M165 P###<_PRESSERFOOT_ON>
+        M165 P#<_PRESSERFOOT_ON>
     
 [TC_SHEET_TECH]
 config_name  = SHEET_TECH
