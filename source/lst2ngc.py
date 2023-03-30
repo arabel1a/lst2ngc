@@ -416,7 +416,7 @@ class LST2NGC(Converter):
                         goodline +=f" o{100 + self.toolchange_cntr} endif \n"
                     self.toolchange_cntr += 1
                     goodline += f"    M66 L0E0\n    o{100 + self.toolchange_cntr} if [#<_hal[start_from]> LT {self.toolchange_cntr}]\n"
-                    goodline += f"    #<_hal[tool_change_cntr]> = {self.toolchange_cntr}\n"
+                    goodline += f"    M142 P{self.toolchange_cntr}\n"
                 tool_code = self.sections['WZG_CALLS'].config.loc[toolcode, 'Werkzeugaufrufnummer']
                 if type(tool_code) is not str:
                     tool_code = tool_code.max()
