@@ -12,7 +12,7 @@
 input_folder    = /home/arabella/lst_examples
 input_extension = LST, lst
 output_folder   = /home/arabella/lst_examples
-output_extension= NGC, ngc
+output_extension= ngc
 
 ### codes which run bwfore amy programm
 g_code_defaults = 
@@ -21,6 +21,7 @@ g_code_defaults =
     #<_spp> = 0
     #<_PRESSERFOOT_ON> = 0
     #<_TANGTOOL_EN> = 0
+    #<_hal[tool_change_cntr]> = 0
     G90
     M666
     M665
