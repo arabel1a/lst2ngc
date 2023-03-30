@@ -9,10 +9,10 @@
 
 [defaults]
 ### OPEN/SAVE dialog defaults 
-input_folder    = /home/arabella/lst_examples
+input_folder    = ~/Downloads
 input_extension = LST, lst
-output_folder   = /home/arabella/lst_examples
-output_extension= ngc
+output_folder   = ~/Desktop/TC2000R/nc_files
+output_extension=ngc
 
 ### codes which run bwfore amy programm
 g_code_defaults = 
@@ -147,8 +147,8 @@ move_subroutine =
             ; угол поворота осей
             #<comp_ang> = [[ATAN[#<little_step_x>]/[#<little_step_y>]] MOD 360]
             ; нправление
-            #<dir_rot_a> = [ -2 * [[ABS[#<comp_ang> - #<_a> MOD 360] GT 180] - 0.5] ]
-            #<dir_rot_b> = [ -2 * [[ABS[#<comp_ang> - #<_a> MOD 360] GT 180] - 0.5] ]
+            #<dir_rot_a> = [ 2 * [[ABS[#<comp_ang> - #<_a> MOD 360] GT 180] - 0.5] ]
+            #<dir_rot_b> = [ 2 * [[ABS[#<comp_ang> - #<_a> MOD 360] GT 180] - 0.5] ]
             ; смещение
             #<dir_offcet_a> = [ [360 + #<dir_rot_a> * ABS[#<comp_ang> - #<_a> MOD 360]] MOD 360 ]
             #<dir_offcet_b> = [ [360 + #<dir_rot_b> * ABS[#<comp_ang> - #<_b> MOD 360]] MOD 360 ]
@@ -198,10 +198,10 @@ move_subroutine =
                 #<little_step_b> = 0; [[#<B_target> MOD 360] / #<little_steps>]
               o994 else
                 ; угол поворота осей
-                  #<comp_ang> = [[[- [ATAN[#<little_step_y>]/[#<little_step_x>]]] MOD 360]]; + #<dir> * #<alpha> ] MOD 360]
+                  #<comp_ang> = [[[ [ATAN[#<little_step_y>]/[#<little_step_x>]]] MOD 360]]; + #<dir> * #<alpha> ] MOD 360]
                   ; нправление
-                  #<dir_rot_a> = [2 * [[[[#<comp_ang> - #<_a> MOD 360] MOD 360 ] GT 180] - 0.5]]
-                  #<dir_rot_b> = [2 * [[[[#<comp_ang> - #<_b> MOD 360] MOD 360 ] GT 180] - 0.5]]
+                  #<dir_rot_a> = [-2 * [[[[#<comp_ang> - #<_a> MOD 360] MOD 360 ] GT 180] - 0.5]]
+                  #<dir_rot_b> = [-2 * [[[[#<comp_ang> - #<_b> MOD 360] MOD 360 ] GT 180] - 0.5]]
                   ; смещение
                   #<dir_offcet_a> = [[#<dir_rot_a> * [#<comp_ang> - #<_a> MOD 360] ] MOD 360 ] 
                   #<dir_offcet_b> = [[#<dir_rot_a> * [#<comp_ang> - #<_b> MOD 360] ] MOD 360 ]
