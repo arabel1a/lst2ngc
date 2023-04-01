@@ -36,6 +36,32 @@ g_code_defaults =
     G1 F108167
     G21
 
+    # check for homing
+    M66 L0E0
+    o124 if [#<_hal[axis.x.homed]> NE 1]:
+      (MSG, X is not homed)
+      m2
+      m0
+    o124 endif
+
+    o125 if [#<_hal[axis.y.homed]> NE 1]:
+      (MSG, Y is not homed)
+      m2
+      m0
+    o125 endif
+
+    o126 if [#<_hal[axis.a.homed]> NE 1]:
+      (MSG, A is not homed)
+      m2
+      m0
+    o126 endif
+
+    o127 if [#<_hal[axis.b.homed]> NE 1]:
+      (MSG, B is not homed)
+      m2
+      m0
+    o127 endif
+
 move_subroutine = 
     o2 sub
       ; punching/nibbling
