@@ -36,7 +36,7 @@ g_code_defaults =
     G1 F108167
     G21
 
-    # check for homing
+    ; check for homing
     M66 L0E0
     o124 if [#<_hal[axis.x.homed]> NE 1]:
       (MSG, X is not homed)
