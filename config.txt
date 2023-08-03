@@ -328,7 +328,10 @@ replace_with = M153
 
 [TC_SHEET_LOAD]
 config_name  = SHEET_LOAD
-replace_with = M651
+replace_with = 
+o375 if [#<_hal[start_from]> LT 1]
+  M651
+o375 endif
 
 [TC_SHEET_UNLOAD]
 config_name  = SHEET_UNLOAD

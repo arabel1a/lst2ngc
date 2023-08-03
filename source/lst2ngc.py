@@ -129,6 +129,7 @@ def header_gen(self = None):
             main_subr_name = self.converter.sections['EINRICHTEPLAN_INFO'].config.iloc[0].loc['Programmnummer (ohne P!)']
             main_subr_no = self.converter.subroutines["PROGRAMM",   main_subr_name]
             self.o_code += [ f"o{main_subr_no} call" ]
+            self.o_code += [ "M17" ]
             self.o_code += [ "M2" ]
         except Exception as e:
             self.converter.status = 'error'
