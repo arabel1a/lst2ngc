@@ -36,27 +36,27 @@ g_code_defaults =
     G1 F108167
     G21
 
-    # check for homing
+    ; check for homing
     M66 L0E0
-    o124 if [#<_hal[axis.x.homed]> NE 1]:
+    o124 if [#<_hal[joint.0.homed]> NE 1]
       (MSG, X is not homed)
       m2
       m0
     o124 endif
 
-    o125 if [#<_hal[axis.y.homed]> NE 1]:
+    o125 if [#<_hal[joint.1.homed]> NE 1]
       (MSG, Y is not homed)
       m2
       m0
     o125 endif
 
-    o126 if [#<_hal[axis.a.homed]> NE 1]:
+    o126 if [#<_hal[joint.2.homed]> NE 1]
       (MSG, A is not homed)
       m2
       m0
     o126 endif
 
-    o127 if [#<_hal[axis.b.homed]> NE 1]:
+    o127 if [#<_hal[joint.3.homed]> NE 1]
       (MSG, B is not homed)
       m2
       m0
@@ -110,12 +110,14 @@ move_subroutine =
         #<Y_target> = 0
       o913 endif
       o914 if [ #3 NE 123456789987654321228]
-        #<A_target> = [ #3 - #<need_g90> * #<_a> ]
+        ;#<A_target> = [ #3 - #<need_g90> * #<_a> ]
+        #<A_target> = [ #3 - #<_a> ]
       o914 else
         #<A_target> = 0
       o914 endif
       o915 if [ #4 NE 123456789987654321228]
-        #<B_target> = [ #4 - #<need_g90> * #<_b> ]
+        ;#<B_target> = [ #4 - #<need_g90> * #<_b> ]
+        #<B_target> = [ #4 - #<_b> ]
       o915 else
         #<B_target> = 0
       o915 endif
@@ -141,7 +143,7 @@ move_subroutine =
       o917 else
         o920 if [[[#<_motion_mode> EQ 10] OR [#<_motion_mode> EQ 0]] AND [#<need_G2> NE 1] AND [#<need_G3> NE 1]]
          ;linear interpolation 
-          (DEBUG, moving from #<_x> to #1 x target in g91: #<X_target>)
+          ;(DEBUG, moving from #<_x> to #1 x target in g91: #<X_target>)
           #<path_len>     =   SQRT[ #<X_target> * #<X_target>  + #<Y_target> * #<Y_target> ]
 
           #<little_steps> =   FIX[ #<path_len> / #<_SPP> ]
@@ -151,7 +153,7 @@ move_subroutine =
           o973 endif
 
           #<dbfg>=[#<path_len> - #<little_steps> * #<_spp>]
-          (DEBUG, PATH LEN: #<path_len> steps: #<little_steps> SPP: #<dbfg> last and #<_spp> commom)
+          ;(DEBUG, PATH LEN: #<path_len> steps: #<little_steps> SPP: #<dbfg> last and #<_spp> commom)
 
           o938 if [#<path_len> EQ 0]
             (MSG, Высечка пути нулевой длины! )
@@ -166,19 +168,37 @@ move_subroutine =
           o998 if [ #<_TANGTOOL_EN> EQ 0 ]
             #<little_step_a>      = 0;[ #<A_target> MOD 360 / #<little_steps> ]
             #<little_step_b>      = 0;[ #<B_target> MOD 360 / #<little_steps> ]
+            ;#<little_step_a>      = [ #<A_target> MOD 360 ]
+            ;#<little_step_b>      = [ #<B_target> MOD 360 ]
+	    ;#<A_target>=0
+	    ;#<B_target>=0
           o998 else
-            (MSG, Поворот в линейном перемещении)
-            (DEBUG,  поворот по А: #<A_target> поворот по B: #<B_target> )
-            M0
+            ;(MSG, Линейное перемещение с включенным tangtool)
+            ;(DEBUG,  поворот по А: #<A_target> поворот по B: #<B_target> )
+            ;M0
+
+            ;; ------------ OLD VERSION -------------
+            ;; угол поворота осей
+            ;#<comp_ang> = [[ATAN[#<little_step_x>]/[#<little_step_y>]] MOD 360]
+            ;; нправление
+            ;#<dir_rot_a> = [ 2 * [[ABS[#<comp_ang> - #<_a> MOD 360] GT 180] - 0.5] ]
+            ;#<dir_rot_b> = [ 2 * [[ABS[#<comp_ang> - #<_a> MOD 360] GT 180] - 0.5] ]
+            ;; смещение
+            ;#<dir_offcet_a> = [ [360 + #<dir_rot_a> * ABS[#<comp_ang> - #<_a> MOD 360]] MOD 360 ]
+            ;#<dir_offcet_b> = [ [360 + #<dir_rot_b> * ABS[#<comp_ang> - #<_b> MOD 360]] MOD 360 ]
+            ;A[#<dir_rot_a> * #<dir_offcet_a>] B[#<dir_rot_b> * #<dir_offcet_b>]
+            ; ------------ NEW VERSION -------------
             ; угол поворота осей
-            #<comp_ang> = [[ATAN[#<little_step_x>]/[#<little_step_y>]] MOD 360]
+            #<comp_ang> = [[[ [ATAN[#<little_step_y>]/[#<little_step_x>]]] MOD 360]]; + #<dir> * #<alpha> ] MOD 360]
             ; нправление
-            #<dir_rot_a> = [ 2 * [[ABS[#<comp_ang> - #<_a> MOD 360] GT 180] - 0.5] ]
-            #<dir_rot_b> = [ 2 * [[ABS[#<comp_ang> - #<_a> MOD 360] GT 180] - 0.5] ]
+            #<dir_rot_a> = [-2 * [[[[#<comp_ang> - #<_a> MOD 360] MOD 360 ] GT 180] - 0.5]]
+            #<dir_rot_b> = [-2 * [[[[#<comp_ang> - #<_b> MOD 360] MOD 360 ] GT 180] - 0.5]]
             ; смещение
-            #<dir_offcet_a> = [ [360 + #<dir_rot_a> * ABS[#<comp_ang> - #<_a> MOD 360]] MOD 360 ]
-            #<dir_offcet_b> = [ [360 + #<dir_rot_b> * ABS[#<comp_ang> - #<_b> MOD 360]] MOD 360 ]
+            #<dir_offcet_a> = [[#<dir_rot_a> * [#<comp_ang> - #<_a> MOD 360] ] MOD 360 ] 
+            #<dir_offcet_b> = [[#<dir_rot_a> * [#<comp_ang> - #<_b> MOD 360] ] MOD 360 ]
             A[#<dir_rot_a> * #<dir_offcet_a>] B[#<dir_rot_b> * #<dir_offcet_b>]
+
+
           o998 endif        
           
           #<little_steps_done> = 0
