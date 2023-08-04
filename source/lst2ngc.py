@@ -129,7 +129,7 @@ def header_gen(self = None):
             main_subr_name = self.converter.sections['EINRICHTEPLAN_INFO'].config.iloc[0].loc['Programmnummer (ohne P!)']
             main_subr_no = self.converter.subroutines["PROGRAMM",   main_subr_name]
             self.o_code += [ f"o{main_subr_no} call" ]
-            self.o_code += [ "M17" ]
+            # self.o_code += [ "M17" ]
             self.o_code += [ "M2" ]
         except Exception as e:
             self.converter.status = 'error'
@@ -309,7 +309,7 @@ class LST2NGC(Converter):
                 'G00':' G0',
                 'G02':' G2',
                 'G03':' G3',
-                'M30':' M30',
+                'M30':' M17',
                 'TC_TOOL_CHANGE':' M6',
                 'TC_SUCTION_ON':' M108',
                 'TC_SUCTION_OFF':' M109',
@@ -322,7 +322,7 @@ class LST2NGC(Converter):
             self.groups = {
                 'TC_TOOL_TECH'     : ["PTT", "M153 \n    M165 P#<_PRESSERFOOT_ON>"],
                 'TC_SHEET_TECH'   : ["SHEET_TECH", "M153"],
-                'TC_SHEET_LOAD'   : ["SHEET_LOAD", "M651"],
+                'TC_SHEET_LOAD'   : ["SHEET_LOAD", "M66 L0E0 \n     o375 if [#<_hal[start_from]> LT 1]\n        M651 \n     o375 endif"],
                 'TC_SHEET_UNLOAD' : ["SHEET_UNLOAD", "M652"],
                 'TC_PART_UNLOAD'  : ["PART_UNLOAD", "M667"],
                 'TC_SHEET_REPOSIT': ['SHEET_REPOSIT', " M610"]
